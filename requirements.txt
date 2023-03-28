@@ -1,0 +1,5 @@
+pylint==2.5.0
+anybadge==1.7.0
+prometheus-client==0.8.0
+pyinstaller==3.6
+requests
