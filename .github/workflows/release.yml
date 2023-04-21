@@ -19,8 +19,6 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    container:
-      image: ubuntu:18.04
     steps:
       - name: Check out the codebase.
         uses: actions/checkout@v2
@@ -30,11 +28,10 @@ jobs:
       - name: Set up Python 3.
         uses: actions/setup-python@v4
         with:
-          python-version: '3.6-dev' 
+          python-version: '3.9-dev' 
 
       - name: Install requirements.
         run: |
-          python3 -m pip install pip --upgrade
           pip3 install -r requirements.txt
 
       - name: Package to binary
