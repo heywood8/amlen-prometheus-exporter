@@ -62,8 +62,8 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.RELEASE_TOKEN }}
-          file: amlen_exporter-${{ env.RELEASE_VERSION }}.linux-amd64.tar
-          asset_name: amlen_exporter-${{ env.RELEASE_VERSION }}.linux-amd64.tar
+          file: amlen_exporter-${{ env.RELEASE_VERSION }}.linux-amd64.tar.gz
+          asset_name: amlen_exporter-${{ env.RELEASE_VERSION }}.linux-amd64.tar.gz
           tag: ${{ github.ref }}
           overwrite: true
           body: "Release ${{ env.RELEASE_VERSION }}"
