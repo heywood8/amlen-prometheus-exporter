@@ -12,7 +12,7 @@ class JsonServerCollector():
     def collect(self):
         ''' Collect metrics'''
         try:
-            response = json.loads(requests.get(self._endpoint).content.decode('UTF-8'))
+            response = json.loads(requests.get(self._endpoint, timeout=10).content.decode('UTF-8'))
         except Exception as ex:
             print(f'Cannot make a request to {self._endpoint} : {type(ex).__name__}')
             return None
@@ -79,7 +79,7 @@ class JsonMemoryCollector():
     def collect(self):
         ''' Collect metrics'''
         try:
-            response = json.loads(requests.get(self._endpoint).content.decode('UTF-8'))
+            response = json.loads(requests.get(self._endpoint, timeout=10).content.decode('UTF-8'))
         except Exception as ex:
             print(f'Cannot make a request to {self._endpoint} : {type(ex).__name__}')
             return None
@@ -126,7 +126,7 @@ class JsonSubscriptionCollector():
         metric = Metric('amlen_subscription_message',
                         'Messages in subscriptions', 'gauge')
         try:
-            response = json.loads(requests.get(self._endpoint, params={})
+            response = json.loads(requests.get(self._endpoint, timeout=10, params={})
                                 .content.decode('UTF-8'))
         except Exception as ex:
             print(f'Cannot make a request to {self._endpoint} : {type(ex).__name__}')
@@ -164,7 +164,7 @@ class JsonEndpointCollector():
 
         try:
             params = {'StatType':'ReadMsgs', 'SubType':'History', 'Duration':6}
-            response = json.loads(requests.get(self._endpoint, params=params)
+            response = json.loads(requests.get(self._endpoint, timeout=10, params=params)
                                   .content.decode('UTF-8'))
             metric = Metric('amlen_endpoint_message_rate',
                             'Messages per second', 'gauge')
@@ -174,7 +174,7 @@ class JsonEndpointCollector():
             metric.add_sample('amlen_endpoint_message_rate_incoming', {}, msg_rate)
             yield metric
 
-            response = json.loads(requests.get(self._endpoint).content.decode('UTF-8'))
+            response = json.loads(requests.get(self._endpoint, timeout=10).content.decode('UTF-8'))
             endpoints = response['Endpoint']
 
             metric = Metric('amlen_endpoint', 'Endpoint counters', 'counter')
@@ -218,7 +218,6 @@ class JsonEndpointCollector():
             print(f'Error collecting Endpoint data: No Endpoint key {keyerr}')
         except Exception as ex:
             print(f'Cannot make a request to {self._endpoint} : {type(ex).__name__}')
-        return None
 
 
 class JsonInfoCollector():
@@ -228,7 +227,7 @@ class JsonInfoCollector():
     def collect(self):
         ''' Collect metrics'''
         try:
-            response = json.loads(requests.get(self._endpoint)
+            response = json.loads(requests.get(self._endpoint, timeout=10)
                               .content.decode('UTF-8'))
         except Exception as ex:
             print(f'Cannot make a request to {self._endpoint} : {type(ex).__name__}')
