@@ -56,7 +56,7 @@ jobs:
           cwd: ./heywood8.amlen-exporter/dist
           files: |
             ./amlen_exporter
-          outPath: amlen_exporter-${{ env.RELEASE_VERSION }}.linux-amd64.tar
+          outPath: amlen_exporter-${{ env.RELEASE_VERSION }}.linux-amd64.tar.gz
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
