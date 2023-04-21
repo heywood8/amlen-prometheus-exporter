@@ -8,7 +8,7 @@ from prometheus_client import start_http_server, Metric, REGISTRY
 class JsonServerCollector():
     ''' Collector for Server endpoint '''
     def __init__(self, endpoint):
-        self._endpoint = 'http://{}/ima/v1/monitor/Server'.format(endpoint)
+        self._endpoint = f'http://{endpoint}/ima/v1/monitor/Server'
     def collect(self):
         ''' Collect metrics'''
         try:
@@ -70,14 +70,15 @@ class JsonServerCollector():
         metric.add_sample('amlen_server_subscriptions', {},
                           response['Server']['Subscriptions'])
         yield metric
+        return None
 
 class JsonMemoryCollector():
     ''' Collector for Memory endpoint '''
     def __init__(self, endpoint):
-        self._endpoint = 'http://{}/ima/v1/monitor/Memory'.format(endpoint)
+        self._endpoint = f'http://{endpoint}/ima/v1/monitor/Memory'
     def collect(self):
         ''' Collect metrics'''
-        try: 
+        try:
             response = json.loads(requests.get(self._endpoint).content.decode('UTF-8'))
         except Exception as ex:
             print('Cannot make a request to {0} : {1}'.format(self._endpoint,type(ex).__name__))
@@ -114,11 +115,12 @@ class JsonMemoryCollector():
         # memory in this category to track message acknowledgments for MQTT.
         metric.add_sample('amlen_memory_client_state', {}, memory['ClientStates'])
         yield metric
+        return None
 
 class JsonSubscriptionCollector():
     ''' Collector for Subscription endpoint '''
     def __init__(self, endpoint):
-        self._endpoint = 'http://{}/ima/v1/monitor/Subscription'.format(endpoint)
+        self._endpoint = f'http://{endpoint}/ima/v1/monitor/Subscription'
     def collect(self):
         ''' Collect metrics'''
         metric = Metric('amlen_subscription_message',
@@ -151,11 +153,12 @@ class JsonSubscriptionCollector():
             yield metric
         except KeyError:
             print('Error collecting Subscription data: No Subscription key')
+        return None
 
 class JsonEndpointCollector():
     ''' Collector for Endpoint endpoint '''
     def __init__(self, endpoint):
-        self._endpoint = 'http://{}/ima/v1/monitor/Endpoint'.format(endpoint)
+        self._endpoint = f'http://{endpoint}/ima/v1/monitor/Endpoint'
     def collect(self):
         ''' Collect metrics'''
 
@@ -212,15 +215,16 @@ class JsonEndpointCollector():
             #yield metric
 
         except KeyError as keyerr:
-            print('Error collecting Endpoint data: No Endpoint key {0}'.format(keyerr))
+            print(f'Error collecting Endpoint data: No Endpoint key {keyerr}'
         except Exception as ex:
             print('Cannot make a request to {0} : {1}'.format(self._endpoint,type(ex).__name__))
+        return None
 
 
 class JsonInfoCollector():
     ''' Collector for Status endpoint '''
     def __init__(self, endpoint):
-        self._endpoint = 'http://{}/ima/v1/service/status/Server'.format(endpoint)
+        self._endpoint = f'http://{endpoint}/ima/v1/service/status/Server'
     def collect(self):
         ''' Collect metrics'''
         try:
@@ -245,10 +249,11 @@ class JsonInfoCollector():
             # metric.add_sample('amlen_info_error_message', {}, info['ErrorMessage'])
 
         except KeyError as keyerr:
-            print('Error collecting Endpoint data: No Endpoint key: {0}'.format(keyerr))
+            print(f'Error collecting Endpoint data: No Endpoint key: {keyerr}')
 
 
         yield metric
+        return None
 
 
 if __name__ == '__main__':
