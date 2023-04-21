@@ -34,7 +34,7 @@ jobs:
 
       - name: Install requirements.
         run: |
-          python3.6 -m pip install pip --upgrade
+          python3 -m pip install pip --upgrade
           pip3 install -r requirements.txt
 
       - name: Package to binary
