@@ -8,10 +8,10 @@ from prometheus_client import start_http_server, Metric, REGISTRY
 class JsonServerCollector():
     ''' Collector for Server endpoint '''
     def __init__(self, endpoint):
-        self._endpoint = 'http://%s/ima/v1/monitor/Server' % endpoint
+        self._endpoint = 'http://{}/ima/v1/monitor/Server'.format(endpoint)
     def collect(self):
         ''' Collect metrics'''
-        try: 
+        try:
             response = json.loads(requests.get(self._endpoint).content.decode('UTF-8'))
         except Exception as ex:
             print('Cannot make a request to {0} : {1}'.format(self._endpoint,type(ex).__name__))
@@ -74,7 +74,7 @@ class JsonServerCollector():
 class JsonMemoryCollector():
     ''' Collector for Memory endpoint '''
     def __init__(self, endpoint):
-        self._endpoint = 'http://%s/ima/v1/monitor/Memory' % endpoint
+        self._endpoint = 'http://{}/ima/v1/monitor/Memory'.format(endpoint)
     def collect(self):
         ''' Collect metrics'''
         try: 
@@ -118,7 +118,7 @@ class JsonMemoryCollector():
 class JsonSubscriptionCollector():
     ''' Collector for Subscription endpoint '''
     def __init__(self, endpoint):
-        self._endpoint = 'http://%s/ima/v1/monitor/Subscription' % endpoint
+        self._endpoint = 'http://{}/ima/v1/monitor/Subscription'.format(endpoint)
     def collect(self):
         ''' Collect metrics'''
         metric = Metric('amlen_subscription_message',
@@ -155,7 +155,7 @@ class JsonSubscriptionCollector():
 class JsonEndpointCollector():
     ''' Collector for Endpoint endpoint '''
     def __init__(self, endpoint):
-        self._endpoint = 'http://%s/ima/v1/monitor/Endpoint' % endpoint
+        self._endpoint = 'http://{}/ima/v1/monitor/Endpoint'.format(endpoint)
     def collect(self):
         ''' Collect metrics'''
 
@@ -184,7 +184,8 @@ class JsonEndpointCollector():
                 # Specifies the total number of connections.
                 metric.add_sample('amlen_endpoint_total_connections', labels, endpoint['Total'])
                 # Specifies the number of connections that failed to connect since reset.
-                metric.add_sample('amlen_endpoint_bad_connections', labels, endpoint['BadConnections'])
+                metric.add_sample('amlen_endpoint_bad_connections', labels,
+                                   endpoint['BadConnections'])
             yield metric
 
             metric = Metric('amlen_endpoint_active', 'Endpoint active connections', 'gauge')
@@ -219,7 +220,7 @@ class JsonEndpointCollector():
 class JsonInfoCollector():
     ''' Collector for Status endpoint '''
     def __init__(self, endpoint):
-        self._endpoint = 'http://%s/ima/v1/service/status/Server' % endpoint
+        self._endpoint = 'http://{}/ima/v1/service/status/Server'.format(endpoint)
     def collect(self):
         ''' Collect metrics'''
         try:
