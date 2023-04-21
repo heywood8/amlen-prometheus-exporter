@@ -21,23 +21,3 @@ jobs:
     - name: Analysing the code with pylint
       run: |
         pylint $(git ls-files '*.py')
-
-  release-centos:
-    name: Release-centos
-    runs-on: ubuntu-latest
-    container: centos/python-36-centos7
-    steps:
-      - name: Check out the codebase.
-        uses: actions/checkout@v2
-
-      - name: Install requirements.
-        run: |
-          pip3 install -r requirements.txt
-
-      - name: Package to binary
-        shell: bash
-        run: |
-          pip3 install virtualenv
-          python3 -m virtualenv venv
-          source venv/bin/activate
-          pyinstaller src/amlen_exporter.py --onefile
