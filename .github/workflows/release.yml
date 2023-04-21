@@ -18,7 +18,9 @@ defaults:
 jobs:
   release:
     name: Release
-    runs-on: ubuntu-20.04	
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:18.04
     steps:
       - name: Check out the codebase.
         uses: actions/checkout@v2
