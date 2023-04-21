@@ -33,7 +33,9 @@ jobs:
           python-version: '3.9-dev' 
 
       - name: Install requirements.
-        run: pip3 install -r requirements.txt
+        run: |
+          python3.6 -m pip install pip --upgrade
+          pip3 install -r requirements.txt
 
       - name: Package to binary
         shell: bash
