@@ -215,7 +215,7 @@ class JsonEndpointCollector():
             #yield metric
 
         except KeyError as keyerr:
-            print(f'Error collecting Endpoint data: No Endpoint key {keyerr}'
+            print(f'Error collecting Endpoint data: No Endpoint key {keyerr}')
         except Exception as ex:
             print('Cannot make a request to {0} : {1}'.format(self._endpoint,type(ex).__name__))
         return None
