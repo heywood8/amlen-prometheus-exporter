@@ -14,7 +14,7 @@ class JsonServerCollector():
         try:
             response = json.loads(requests.get(self._endpoint).content.decode('UTF-8'))
         except Exception as ex:
-            print('Cannot make a request to {0} : {1}'.format(self._endpoint,type(ex).__name__))
+            print(f'Cannot make a request to {self._endpoint} : {type(ex).__name__}'
             return None
 
         metric = Metric('amlen_server_connections',
@@ -81,7 +81,7 @@ class JsonMemoryCollector():
         try:
             response = json.loads(requests.get(self._endpoint).content.decode('UTF-8'))
         except Exception as ex:
-            print('Cannot make a request to {0} : {1}'.format(self._endpoint,type(ex).__name__))
+            print(f'Cannot make a request to {self._endpoint} : {type(ex).__name__}'
             return None
         memory = response['Memory']
         metric = Metric('amlen_memory', 'Memory metrics', 'gauge')
@@ -129,7 +129,7 @@ class JsonSubscriptionCollector():
             response = json.loads(requests.get(self._endpoint, params={})
                                 .content.decode('UTF-8'))
         except Exception as ex:
-            print('Cannot make a request to {0} : {1}'.format(self._endpoint,type(ex).__name__))
+            print(f'Cannot make a request to {self._endpoint} : {type(ex).__name__}'
             return None
 
         try:
@@ -217,7 +217,7 @@ class JsonEndpointCollector():
         except KeyError as keyerr:
             print(f'Error collecting Endpoint data: No Endpoint key {keyerr}')
         except Exception as ex:
-            print('Cannot make a request to {0} : {1}'.format(self._endpoint,type(ex).__name__))
+            print(f'Cannot make a request to {self._endpoint} : {type(ex).__name__}'
         return None
 
 
@@ -231,7 +231,7 @@ class JsonInfoCollector():
             response = json.loads(requests.get(self._endpoint)
                               .content.decode('UTF-8'))
         except Exception as ex:
-            print('Cannot make a request to {0} : {1}'.format(self._endpoint,type(ex).__name__))
+            print(f'Cannot make a request to {self._endpoint} : {type(ex).__name__}'
             return None
         metric = Metric('amlen_info', 'Status metrics counters', 'info')
         try:
