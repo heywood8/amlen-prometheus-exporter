@@ -7,7 +7,7 @@ Amlen (ex Messagesight) Prometheus exporter
 A step by step series of examples that tell you how to get exporter running as a service running
 
 ```shell
-sudo apt-get install python3.9-dev 
+sudo yum install python3
 git clone https://github.com/heywood8/amlen-prometheus-exporter.git
 cd amlen-prometheus-exporter
 pip3 install virtualenv

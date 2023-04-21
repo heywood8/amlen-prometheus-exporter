@@ -69,3 +69,7 @@ jobs:
           overwrite: true
           body: "Release ${{ env.RELEASE_VERSION }}"
 
+  release-centos:
+    name: Release-centos
+    runs-on: ubuntu-latest
+    container: centos/python-36-centos7
