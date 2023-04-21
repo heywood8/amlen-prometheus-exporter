@@ -1,0 +1,68 @@
+---
+# This workflow requires a GALAXY_API_KEY secret present in the GitHub
+# repository or organization.
+#
+# See: https://github.com/marketplace/actions/publish-ansible-role-to-galaxy
+# See: https://github.com/ansible/galaxy/issues/46
+
+name: Release
+'on':
+  push:
+    tags:
+      - '*'
+
+defaults:
+  run:
+    working-directory: 'heywood8.amlen-exporter'
+
+jobs:
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the codebase.
+        uses: actions/checkout@v2
+        with:
+          path: 'heywood8.amlen-exporter'
+
+      - name: Set up Python 3.
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+
+      - name: Install requirements.
+        run: pip3 install -r requirements.txt
+
+      - name: Package to binary
+        run: >-
+          pyinstaller src/amlen_exporter.py --onefile
+
+      - name: Set env
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+
+      - name: Test
+        run: |
+          echo $RELEASE_VERSION
+          echo ${{ env.RELEASE_VERSION }}
+      
+      - name: Compress action step
+        uses: a7ul/tar-action@v1.1.0
+        id: compress
+        with:
+          command: c
+          cwd: ./dist
+          files: |
+            ./amlen_exporter
+          outPath: amlen_exporter-${{ env.RELEASE_VERSION }}.linux-amd64.tar
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: amlen_exporter-${{ env.RELEASE_VERSION }}.linux-amd64.tar
+          asset_name: amlen_exporter-${{ env.RELEASE_VERSION }}.linux-amd64.tar
+          tag: ${{ github.ref }}
+          overwrite: true
+          body: "Release ${{ env.RELEASE_VERSION }}"
+

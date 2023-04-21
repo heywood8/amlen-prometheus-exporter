@@ -11,7 +11,11 @@ class JsonServerCollector():
         self._endpoint = 'http://%s/ima/v1/monitor/Server' % endpoint
     def collect(self):
         ''' Collect metrics'''
-        response = json.loads(requests.get(self._endpoint).content.decode('UTF-8'))
+        try: 
+            response = json.loads(requests.get(self._endpoint).content.decode('UTF-8'))
+        except Exception as ex:
+            print('Cannot make a request to {0} : {1}'.format(self._endpoint,type(ex).__name__))
+            return None
 
         metric = Metric('amlen_server_connections',
                         'Connections to the server', 'gauge')
@@ -73,7 +77,11 @@ class JsonMemoryCollector():
         self._endpoint = 'http://%s/ima/v1/monitor/Memory' % endpoint
     def collect(self):
         ''' Collect metrics'''
-        response = json.loads(requests.get(self._endpoint).content.decode('UTF-8'))
+        try: 
+            response = json.loads(requests.get(self._endpoint).content.decode('UTF-8'))
+        except Exception as ex:
+            print('Cannot make a request to {0} : {1}'.format(self._endpoint,type(ex).__name__))
+            return None
         memory = response['Memory']
         metric = Metric('amlen_memory', 'Memory metrics', 'gauge')
         # Total amount of physical memory on IBM IoT MessageSight
@@ -115,9 +123,13 @@ class JsonSubscriptionCollector():
         ''' Collect metrics'''
         metric = Metric('amlen_subscription_message',
                         'Messages in subscriptions', 'gauge')
+        try:
+            response = json.loads(requests.get(self._endpoint, params={})
+                                .content.decode('UTF-8'))
+        except Exception as ex:
+            print('Cannot make a request to {0} : {1}'.format(self._endpoint,type(ex).__name__))
+            return None
 
-        response = json.loads(requests.get(self._endpoint, params={})
-                              .content.decode('UTF-8'))
         try:
             for subscription in response['Subscription']:
                 labels = {
@@ -200,6 +212,9 @@ class JsonEndpointCollector():
 
         except KeyError as keyerr:
             print('Error collecting Endpoint data: No Endpoint key {0}'.format(keyerr))
+        except Exception as ex:
+            print('Cannot make a request to {0} : {1}'.format(self._endpoint,type(ex).__name__))
+
 
 class JsonInfoCollector():
     ''' Collector for Status endpoint '''
@@ -207,8 +222,12 @@ class JsonInfoCollector():
         self._endpoint = 'http://%s/ima/v1/service/status/Server' % endpoint
     def collect(self):
         ''' Collect metrics'''
-        response = json.loads(requests.get(self._endpoint)
+        try:
+            response = json.loads(requests.get(self._endpoint)
                               .content.decode('UTF-8'))
+        except Exception as ex:
+            print('Cannot make a request to {0} : {1}'.format(self._endpoint,type(ex).__name__))
+            return None
         metric = Metric('amlen_info', 'Status metrics counters', 'info')
         try:
             info = response['Server']
