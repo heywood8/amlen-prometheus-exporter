@@ -23,8 +23,6 @@ jobs:
     steps:
       - name: Check out the codebase.
         uses: actions/checkout@v2
-        with:
-          path: 'heywood8.amlen-exporter'
 
       - name: Set up Python 3.
         uses: actions/setup-python@v4
@@ -54,7 +52,7 @@ jobs:
         id: compress
         with:
           command: c
-          cwd: ./dist
+          cwd: ./heywood8.amlen-exporter/dist
           files: |
             ./amlen_exporter
           outPath: amlen_exporter-${{ env.RELEASE_VERSION }}.linux-amd64.tar
