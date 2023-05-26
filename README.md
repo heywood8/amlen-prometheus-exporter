@@ -1,6 +1,9 @@
 # amlen-prometheus-exporter
 Amlen (ex Messagesight) Prometheus exporter
 
+## Installing with Ansible (recommended option)
+
+Go to [Ansible Role for amlen_exporter](https://github.com/heywood8/ansible-role-amlen_exporter) for instructions
 
 ## Installing from source
 
