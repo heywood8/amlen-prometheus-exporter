@@ -140,12 +140,14 @@ class JsonSubscriptionCollector():
         # "MessagingPolicy":"DemoTopicPolicy }] }
         try:
             for subscription in response['Subscription']:
+                isDurable = subscription['IsDurable']
+                isShared = subscription['isShared']
                 labels = {
                     'MessagingPolicy': subscription['MessagingPolicy'],
                     'ClientID': subscription['ClientID'],
                     'SubName': subscription['SubName'],
                     'TopicString': subscription['TopicString'],
-                    'IsDurable': subscription['IsDurable'],
+                    'IsDurable': f'{subscription['IsDurable\']}',
                     'IsShared': subscription['IsShared']
                 }
                 metric.add_sample('amlen_subscription_message_published', labels,
