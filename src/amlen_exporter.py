@@ -1,4 +1,4 @@
-''' MessageSight exporter for prometheus '''
+''' Amlen exporter for prometheus '''
 import json
 import sys
 import time
@@ -38,11 +38,11 @@ class JsonServerCollector():
                         'Messages on the server', 'gauge')
         # This statistic provides an approximate count of the number of messages
         # (including inflight messages) that are currently buffered on queues
-        # and subscriptions on the IBM IoT MessageSight server.
+        # and subscriptions on the Eclipse Amlen server.
         metric.add_sample('amlen_server_messages_buffered', {},
                           response['Server']['BufferedMessages'])
         # This statistic provides an approximate count of the number of retained messages (including
-        # inflight messages) that are currently waiting on topics on the IBM IoT MessageSight
+        # inflight messages) that are currently waiting on topics on the Eclipse Amlen
         # server. The messages are waiting to be delivered to new subscribers on those topics
         # when their subscription is created for the first time.
         # The RetainedMessages statistic does not represent the number of topics with a retained
@@ -57,7 +57,7 @@ class JsonServerCollector():
         # clients and disconnected clients that have a session which is not ended.
         metric.add_sample('amlen_client_session_active', {},
                           response['Server']['ClientSessions'])
-        # The number of client sessions that have been removed since the IBM IoT MessageSight
+        # The number of client sessions that have been removed since the Eclipse Amlen
         # server restarted. Sessions are expired because of the SessionExpiry interval that is set
         # by an MQTTv5 client, or because of the MaxSessionExpiryInterval of a connection policy.
         metric.add_sample('amlen_server_client_session_expired', {},
@@ -85,30 +85,30 @@ class JsonMemoryCollector():
             return None
         memory = response['Memory']
         metric = Metric('amlen_memory', 'Memory metrics', 'gauge')
-        # Total amount of physical memory on IBM IoT MessageSight
+        # Total amount of physical memory on Eclipse Amlen
         metric.add_sample('amlen_memory_total_bytes', {}, memory['MemoryTotalBytes'])
         # Amount of physical memory that is available.
         metric.add_sample('amlen_memory_free_bytes', {}, memory['MemoryFreeBytes'])
         # The amount of free memory as a percentage of total physical memory
         metric.add_sample('amlen_memory_free_percent', {}, memory['MemoryFreePercent'])
-        # The amount of physical memory that is being used by IBM IoT MessageSight.
+        # The amount of physical memory that is being used by Eclipse Amlen.
         metric.add_sample('amlen_memory_resident_set_bytes', {}, memory['ServerResidentSetBytes'])
-        # The amount of virtual memory that is being used by IBM IoT MessageSight.
+        # The amount of virtual memory that is being used by Eclipse Amlen.
         metric.add_sample('amlen_memory_virt_bytes', {}, memory['ServerVirtualMemoryBytes'])
         # The amount of memory that is being used for message payloads.
-        # It shows the amount of memory that is used to store messages on IBM IoT MessageSight.
+        # It shows the amount of memory that is used to store messages on Eclipse Amlen.
         metric.add_sample('amlen_memory_message_payloads', {}, memory['MessagePayloads'])
         # The amount of memory that is being used for publish/subscribe messaging.
         metric.add_sample('amlen_memory_publish_subscribe', {}, memory['PublishSubscribe'])
-        # the amount of memory that is being used by IBM IoT MessageSight for destinations.
+        # the amount of memory that is being used by Eclipse Amlen for destinations.
         # That is, for queues and topics. The memory that is allocated in this category is used to
         # organize messages into the queues and subscriptions that are used by clients.
         metric.add_sample('amlen_memory_destinations', {}, memory['Destinations'])
-        # This category shows the amount of memory that is being used by IBM IoT MessageSight
+        # This category shows the amount of memory that is being used by Eclipse Amlen
         # for current activity. Memory that is allocated in this category includes sessions,
         # transactions, message acknowledgments, and monitoring request information.
         metric.add_sample('amlen_memory_current_activity', {}, memory['CurrentActivity'])
-        # This category shows the amount of memory that is being used by IBM IoT MessageSight
+        # This category shows the amount of memory that is being used by Eclipse Amlen
         # for connected and disconnected clients. The server allocates memory in this category
         # for each client that is connected to the server. For MQTT clients that use cleanSession=0,
         # the memory allocation continues after the client disconnects.The server also allocates
@@ -131,13 +131,22 @@ class JsonSubscriptionCollector():
         except Exception as ex:
             print(f'Cannot make a request to {self._endpoint} : {type(ex).__name__}')
             return None
-
+        # Response example: { "Version":"v1", "Subscription":
+        # [{"SubName":"DemoSubscription","TopicString":"DemoTopic",
+        # "ClientID":"Demo ID","IsDurable":"True","BufferedMsgs":0,
+        # "BufferedMsgsHWM":0,"BufferedPercent":0.0,"MaxMessages":5123
+        # "PublishedMsgs":0,"RejectedMsgs":0,"BufferedHWMPercent":0.0,
+        # "IsShared":"False","Consumers":1,"DiscardedMsgs":0,"ExpiredMsgs":0,
+        # "MessagingPolicy":"DemoTopicPolicy }] }
         try:
             for subscription in response['Subscription']:
                 labels = {
                     'MessagingPolicy': subscription['MessagingPolicy'],
                     'ClientID': subscription['ClientID'],
-                    'SubName': subscription['SubName']
+                    'SubName': subscription['SubName'],
+                    'TopicString': subscription['TopicString'],
+                    'IsDurable': subscription['IsDurable'],
+                    'IsShared': subscription['IsShared']
                 }
                 metric.add_sample('amlen_subscription_message_published', labels,
                                   subscription['PublishedMsgs'])
@@ -145,11 +154,23 @@ class JsonSubscriptionCollector():
                 metric.add_sample('amlen_subscription_message_buffered', labels,
                                   subscription['BufferedMsgs'])
 
+                metric.add_sample('amlen_subscription_message_discarded', labels,
+                                  subscription['DiscardedMsgs'])
+
+                metric.add_sample('amlen_subscription_message_expired', labels,
+                                  subscription['ExpiredMsgs'])
+
                 metric.add_sample('amlen_subscription_message_buffered_percent', labels,
                                   subscription['BufferedPercent'])
 
                 metric.add_sample('amlen_subscription_message_buffered_peak', labels,
                                   subscription['BufferedMsgsHWM'])
+
+                metric.add_sample('amlen_subscription_message_buffered_max', labels,
+                                  subscription['MaxMessages'])
+
+                metric.add_sample('amlen_subscription_consumers', labels,
+                                  subscription['Consumers'])
             yield metric
         except KeyError:
             print('Error collecting Subscription data: No Subscription key')
