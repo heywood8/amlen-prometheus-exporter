@@ -174,6 +174,8 @@ class JsonSubscriptionCollector():
             yield metric
         except KeyError:
             print('Error collecting Subscription data: No Subscription key')
+        except Exception as ex:
+            print(f'Cannot create subscription metrics: {type(ex).__name__}')
         return None
 
 class JsonEndpointCollector():
