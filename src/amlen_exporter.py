@@ -147,8 +147,8 @@ class JsonSubscriptionCollector():
                     'ClientID': subscription['ClientID'],
                     'SubName': subscription['SubName'],
                     'TopicString': subscription['TopicString'],
-                    'IsDurable': f'{subscription['IsDurable\']}',
-                    'IsShared': subscription['IsShared']
+                    'IsDurable': f'{isDurable}',
+                    'IsShared': f'{isShared}'
                 }
                 metric.add_sample('amlen_subscription_message_published', labels,
                                   subscription['PublishedMsgs'])
