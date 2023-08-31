@@ -32,7 +32,6 @@ class JsonServerCollector():
         # Count of connections that failed to connect since reset.
         metric.add_sample('amlen_connections_total_bad', {},
                           response['Server']['BadConnCount'])
-        metric
         yield metric
 
         metric = Metric('amlen_server_messages',
@@ -277,14 +276,21 @@ class JsonInfoCollector():
         return None
 
 
-def server(server_port, amlen_address):
+def server(server_port, amlen_address, once):
     start_http_server(server_port)
     REGISTRY.register(JsonServerCollector(amlen_address))
     REGISTRY.register(JsonMemoryCollector(amlen_address))
     REGISTRY.register(JsonEndpointCollector(amlen_address))
     REGISTRY.register(JsonSubscriptionCollector(amlen_address))
     REGISTRY.register(JsonInfoCollector(amlen_address))
-    while True:
+    try:
+        response = get(f'http://localhost:{server_port}', timeout=10).content.decode('UTF-8')
+    except Exception as ex:
+        print(f'Cannot make a request to localhost:{server_port} : {type(ex).__name__}')
+        return None
+    if once:
+        print(response)
+    while not once:
         sleep(1)
 
 
@@ -301,7 +307,4 @@ if __name__ == '__main__':
                    help='Run once instead of running server')
     args = parser.parse_args()
 
-    if not args.once:
-        server(args.port, args.amlen_address)
-    else:
-        print('Collecting metrics once')
+    server(args.port, args.amlen_address, args.once)
