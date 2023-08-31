@@ -294,10 +294,10 @@ if __name__ == '__main__':
     REGISTRY.register(JsonSubscriptionCollector(args.amlen_address))
     REGISTRY.register(JsonInfoCollector(args.amlen_address))
     try:
-        selfrequest = get(f'http://localhost:{args.server_port}'
+        selfrequest = get(f'http://localhost:{args.port}'
                           , timeout=10).content.decode('UTF-8')
     except Exception as ex:
-        print(f'Cannot make a request to localhost:{args.server_port} : {type(ex).__name__}')
+        print(f'Cannot make a request to localhost:{args.port} : {type(ex).__name__}')
 
     if args.once:
         print(selfrequest)
