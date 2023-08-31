@@ -13,8 +13,8 @@ class JsonServerCollector():
         ''' Collect metrics'''
         try:
             response = loads(get(self._endpoint, timeout=10).content.decode('UTF-8'))
-        except Exception as ex:
-            print(f'Cannot make a request to {self._endpoint} : {type(ex).__name__}')
+        except Exception as unknown_exception:
+            print(f'Cannot make a request to {self._endpoint} : {type(unknown_exception).__name__}')
             return None
 
         metric = Metric('amlen_server_connections',
@@ -80,8 +80,8 @@ class JsonMemoryCollector():
         ''' Collect metrics'''
         try:
             response = loads(get(self._endpoint, timeout=10).content.decode('UTF-8'))
-        except Exception as ex:
-            print(f'Cannot make a request to {self._endpoint} : {type(ex).__name__}')
+        except Exception as unknown_exception:
+            print(f'Cannot make a request to {self._endpoint} : {type(unknown_exception).__name__}')
             return None
         memory = response['Memory']
         metric = Metric('amlen_memory', 'Memory metrics', 'gauge')
@@ -128,8 +128,8 @@ class JsonSubscriptionCollector():
         try:
             response = loads(get(self._endpoint, timeout=10, params={})
                                 .content.decode('UTF-8'))
-        except Exception as ex:
-            print(f'Cannot make a request to {self._endpoint} : {type(ex).__name__}')
+        except Exception as unknown_exception:
+            print(f'Cannot make a request to {self._endpoint} : {type(unknown_exception).__name__}')
             return None
         # Response example: { "Version":"v1", "Subscription":
         # [{"SubName":"DemoSubscription","TopicString":"DemoTopic",
@@ -172,8 +172,8 @@ class JsonSubscriptionCollector():
             yield metric
         except KeyError:
             print('Error collecting Subscription data: No Subscription key')
-        except Exception as ex:
-            print(f'Cannot create subscription metrics: {type(ex).__name__}')
+        except Exception as unknown_exception:
+            print(f'Cannot create subscription metrics: {type(unknown_exception).__name__}')
         return None
 
 class JsonEndpointCollector():
@@ -237,8 +237,8 @@ class JsonEndpointCollector():
 
         except KeyError as keyerr:
             print(f'Error collecting Endpoint data: No Endpoint key {keyerr}')
-        except Exception as ex:
-            print(f'Cannot make a request to {self._endpoint} : {type(ex).__name__}')
+        except Exception as unknown_exception:
+            print(f'Cannot make a request to {self._endpoint} : {type(unknown_exception).__name__}')
 
 
 class JsonInfoCollector():
@@ -294,12 +294,12 @@ if __name__ == '__main__':
     REGISTRY.register(JsonSubscriptionCollector(args.amlen_address))
     REGISTRY.register(JsonInfoCollector(args.amlen_address))
     try:
-        response = get(f'http://localhost:{server_port}', timeout=10).content.decode('UTF-8')
-    except Exception as ex:
-        print(f'Cannot make a request to localhost:{server_port} : {type(ex).__name__}')
+        selfrequest = get(f'http://localhost:{args.server_port}', timeout=10).content.decode('UTF-8')
+    except Exception as unknown_exception:
+        print(f'Cannot make a request to localhost:{args.server_port} : {type(ex).__name__}')
 
     if args.once:
-        print(response)
+        print(selfrequest)
 
     while not args.once:
         sleep(1)
