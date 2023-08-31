@@ -14,7 +14,7 @@ class JsonServerCollector():
         try:
             response = loads(get(self._endpoint, timeout=10).content.decode('UTF-8'))
         except Exception as unknown_exception:
-            print(f'Cannot make a request to {self._endpoint} : {type(unknown_exception).__name__}')
+            print(f'Error: Cannot make a request to {self._endpoint} : {type(unknown_exception).__name__}')
             return None
 
         metric = Metric('amlen_server_connections',
@@ -81,7 +81,7 @@ class JsonMemoryCollector():
         try:
             response = loads(get(self._endpoint, timeout=10).content.decode('UTF-8'))
         except Exception as unknown_exception:
-            print(f'Cannot make a request to {self._endpoint} : {type(unknown_exception).__name__}')
+            print(f'Error: Cannot make a request to {self._endpoint} : {type(unknown_exception).__name__}')
             return None
         memory = response['Memory']
         metric = Metric('amlen_memory', 'Memory metrics', 'gauge')
@@ -129,7 +129,7 @@ class JsonSubscriptionCollector():
             response = loads(get(self._endpoint, timeout=10, params={})
                                 .content.decode('UTF-8'))
         except Exception as unknown_exception:
-            print(f'Cannot make a request to {self._endpoint} : {type(unknown_exception).__name__}')
+            print(f'Error: Cannot make a request to {self._endpoint} : {type(unknown_exception).__name__}')
             return None
         # Response example: { "Version":"v1", "Subscription":
         # [{"SubName":"DemoSubscription","TopicString":"DemoTopic",
@@ -173,7 +173,7 @@ class JsonSubscriptionCollector():
         except KeyError:
             print('Error collecting Subscription data: No Subscription key')
         except Exception as unknown_exception:
-            print(f'Cannot create subscription metrics: {type(unknown_exception).__name__}')
+            print(f'Error: Cannot create subscription metrics: {type(unknown_exception).__name__}')
         return None
 
 class JsonEndpointCollector():
@@ -236,9 +236,9 @@ class JsonEndpointCollector():
             #yield metric
 
         except KeyError as keyerr:
-            print(f'Error collecting Endpoint data: No Endpoint key {keyerr}')
+            print(f'Error: collecting Endpoint data: No Endpoint key {keyerr}')
         except Exception as unknown_exception:
-            print(f'Cannot make a request to {self._endpoint} : {type(unknown_exception).__name__}')
+            print(f'Error: Cannot make a request to {self._endpoint} : {type(unknown_exception).__name__}')
 
 
 class JsonInfoCollector():
@@ -251,7 +251,7 @@ class JsonInfoCollector():
             response = loads(get(self._endpoint, timeout=10)
                               .content.decode('UTF-8'))
         except Exception as unknown_exception:
-            print(f'Cannot make a request to {self._endpoint} : {type(unknown_exception).__name__}')
+            print(f'Error: Cannot make a request to {self._endpoint} : {type(unknown_exception).__name__}')
             return None
         metric = Metric('amlen_info', 'Status metrics counters', 'info')
         try:
@@ -297,7 +297,7 @@ if __name__ == '__main__':
         selfrequest = get(f'http://localhost:{args.port}'
                           , timeout=10).content.decode('UTF-8')
     except Exception as ex:
-        print(f'Cannot make a request to localhost:{args.port} : {type(ex).__name__}')
+        print(f'Error: Cannot make a request to localhost:{args.port} : {type(ex).__name__}')
 
     if args.once:
         print(selfrequest)
