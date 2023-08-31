@@ -1,4 +1,5 @@
 # amlen-prometheus-exporter
+
 Amlen (ex Messagesight) Prometheus exporter
 
 ## Installing with Ansible (recommended option)
@@ -27,3 +28,6 @@ sudo systemctl start amlen_exporter
 sudo systemctl enable amlen_exporter
 ```
 
+## Quickstart to run amlen-server (non-persistent)
+
+docker run -p 9089:9089 -d --name imaserver -d heywood8/amlen-server:1.0.0.1-20220622.1025_eclipse

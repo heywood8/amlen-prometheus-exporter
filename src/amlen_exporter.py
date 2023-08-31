@@ -1,8 +1,8 @@
 ''' Amlen exporter for prometheus '''
-import json
-import sys
-import time
-import requests
+from json import loads
+from time import sleep
+from argparse import ArgumentParser
+from requests import get
 from prometheus_client import start_http_server, Metric, REGISTRY
 
 class JsonServerCollector():
@@ -12,9 +12,9 @@ class JsonServerCollector():
     def collect(self):
         ''' Collect metrics'''
         try:
-            response = json.loads(requests.get(self._endpoint, timeout=10).content.decode('UTF-8'))
-        except Exception as ex:
-            print(f'Cannot make a request to {self._endpoint} : {type(ex).__name__}')
+            response = loads(get(self._endpoint, timeout=10).content.decode('UTF-8'))
+        except Exception as unknown_exception:
+            print(f'Error: Cannot request {self._endpoint} : {type(unknown_exception).__name__}')
             return None
 
         metric = Metric('amlen_server_connections',
@@ -79,9 +79,9 @@ class JsonMemoryCollector():
     def collect(self):
         ''' Collect metrics'''
         try:
-            response = json.loads(requests.get(self._endpoint, timeout=10).content.decode('UTF-8'))
-        except Exception as ex:
-            print(f'Cannot make a request to {self._endpoint} : {type(ex).__name__}')
+            response = loads(get(self._endpoint, timeout=10).content.decode('UTF-8'))
+        except Exception as unknown_exception:
+            print(f'Error: Cannot request {self._endpoint} : {type(unknown_exception).__name__}')
             return None
         memory = response['Memory']
         metric = Metric('amlen_memory', 'Memory metrics', 'gauge')
@@ -126,10 +126,10 @@ class JsonSubscriptionCollector():
         metric = Metric('amlen_subscription_message',
                         'Messages in subscriptions', 'gauge')
         try:
-            response = json.loads(requests.get(self._endpoint, timeout=10, params={})
+            response = loads(get(self._endpoint, timeout=10, params={})
                                 .content.decode('UTF-8'))
-        except Exception as ex:
-            print(f'Cannot make a request to {self._endpoint} : {type(ex).__name__}')
+        except Exception as unknown_exception:
+            print(f'Error: Cannot request {self._endpoint} : {type(unknown_exception).__name__}')
             return None
         # Response example: { "Version":"v1", "Subscription":
         # [{"SubName":"DemoSubscription","TopicString":"DemoTopic",
@@ -172,8 +172,8 @@ class JsonSubscriptionCollector():
             yield metric
         except KeyError:
             print('Error collecting Subscription data: No Subscription key')
-        except Exception as ex:
-            print(f'Cannot create subscription metrics: {type(ex).__name__}')
+        except Exception as unknown_exception:
+            print(f'Error: Cannot create subscription metrics: {type(unknown_exception).__name__}')
         return None
 
 class JsonEndpointCollector():
@@ -185,7 +185,7 @@ class JsonEndpointCollector():
 
         try:
             params = {'StatType':'ReadMsgs', 'SubType':'History', 'Duration':6}
-            response = json.loads(requests.get(self._endpoint, timeout=10, params=params)
+            response = loads(get(self._endpoint, timeout=10, params=params)
                                   .content.decode('UTF-8'))
             metric = Metric('amlen_endpoint_message_rate',
                             'Messages per second', 'gauge')
@@ -195,7 +195,7 @@ class JsonEndpointCollector():
             metric.add_sample('amlen_endpoint_message_rate_incoming', {}, msg_rate)
             yield metric
 
-            response = json.loads(requests.get(self._endpoint, timeout=10).content.decode('UTF-8'))
+            response = loads(get(self._endpoint, timeout=10).content.decode('UTF-8'))
             endpoints = response['Endpoint']
 
             metric = Metric('amlen_endpoint', 'Endpoint counters', 'counter')
@@ -236,9 +236,9 @@ class JsonEndpointCollector():
             #yield metric
 
         except KeyError as keyerr:
-            print(f'Error collecting Endpoint data: No Endpoint key {keyerr}')
-        except Exception as ex:
-            print(f'Cannot make a request to {self._endpoint} : {type(ex).__name__}')
+            print(f'Error: collecting Endpoint data: No Endpoint key {keyerr}')
+        except Exception as unknown_exception:
+            print(f'Error: Cannot request {self._endpoint} : {type(unknown_exception).__name__}')
 
 
 class JsonInfoCollector():
@@ -248,10 +248,10 @@ class JsonInfoCollector():
     def collect(self):
         ''' Collect metrics'''
         try:
-            response = json.loads(requests.get(self._endpoint, timeout=10)
+            response = loads(get(self._endpoint, timeout=10)
                               .content.decode('UTF-8'))
-        except Exception as ex:
-            print(f'Cannot make a request to {self._endpoint} : {type(ex).__name__}')
+        except Exception as unknown_exception:
+            print(f'Error: Cannot request {self._endpoint} : {type(unknown_exception).__name__}')
             return None
         metric = Metric('amlen_info', 'Status metrics counters', 'info')
         try:
@@ -275,14 +275,32 @@ class JsonInfoCollector():
         yield metric
         return None
 
-
 if __name__ == '__main__':
     # Usage: json_exporter.py port endpoint
-    start_http_server(int(sys.argv[1]))
-    REGISTRY.register(JsonServerCollector(sys.argv[2]))
-    REGISTRY.register(JsonMemoryCollector(sys.argv[2]))
-    REGISTRY.register(JsonEndpointCollector(sys.argv[2]))
-    REGISTRY.register(JsonSubscriptionCollector(sys.argv[2]))
-    REGISTRY.register(JsonInfoCollector(sys.argv[2]))
-    while True:
-        time.sleep(1)
+    parser = ArgumentParser(description='Amlen Prometheus exporter')
+    parser.add_argument('port', type=int, nargs='?',
+                   default=9672,
+                   help='This exporters\' port. Default: 9672')
+    parser.add_argument('amlen_address', type=str, nargs='?',
+                   default='localhost:9089',
+                   help='Address of Amlen server. Default: localhost:9089')
+    parser.add_argument('--once', nargs='?', const=True, default=False,
+                   help='Run once instead of running server')
+    args = parser.parse_args()
+    start_http_server(args.port)
+    REGISTRY.register(JsonServerCollector(args.amlen_address))
+    REGISTRY.register(JsonMemoryCollector(args.amlen_address))
+    REGISTRY.register(JsonEndpointCollector(args.amlen_address))
+    REGISTRY.register(JsonSubscriptionCollector(args.amlen_address))
+    REGISTRY.register(JsonInfoCollector(args.amlen_address))
+    try:
+        selfrequest = get(f'http://localhost:{args.port}'
+                          , timeout=10).content.decode('UTF-8')
+    except Exception as ex:
+        print(f'Error: Cannot request localhost:{args.port} : {type(ex).__name__}')
+
+    if args.once:
+        print(selfrequest)
+
+    while not args.once:
+        sleep(1)
