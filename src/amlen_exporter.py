@@ -1,8 +1,8 @@
 ''' Amlen exporter for prometheus '''
 from json import loads
 from time import sleep
-from requests import get
 from argparse import ArgumentParser
+from requests import get
 from prometheus_client import start_http_server, Metric, REGISTRY
 
 class JsonServerCollector():
@@ -275,25 +275,6 @@ class JsonInfoCollector():
         yield metric
         return None
 
-
-def server(server_port, amlen_address, once):
-    start_http_server(server_port)
-    REGISTRY.register(JsonServerCollector(amlen_address))
-    REGISTRY.register(JsonMemoryCollector(amlen_address))
-    REGISTRY.register(JsonEndpointCollector(amlen_address))
-    REGISTRY.register(JsonSubscriptionCollector(amlen_address))
-    REGISTRY.register(JsonInfoCollector(amlen_address))
-    try:
-        response = get(f'http://localhost:{server_port}', timeout=10).content.decode('UTF-8')
-    except Exception as ex:
-        print(f'Cannot make a request to localhost:{server_port} : {type(ex).__name__}')
-        return None
-    if once:
-        print(response)
-    while not once:
-        sleep(1)
-
-
 if __name__ == '__main__':
     # Usage: json_exporter.py port endpoint
     parser = ArgumentParser(description='Amlen Prometheus exporter')
@@ -306,5 +287,19 @@ if __name__ == '__main__':
     parser.add_argument('--once', nargs='?', const=True, default=False,
                    help='Run once instead of running server')
     args = parser.parse_args()
+    start_http_server(args.port)
+    REGISTRY.register(JsonServerCollector(args.amlen_address))
+    REGISTRY.register(JsonMemoryCollector(args.amlen_address))
+    REGISTRY.register(JsonEndpointCollector(args.amlen_address))
+    REGISTRY.register(JsonSubscriptionCollector(args.amlen_address))
+    REGISTRY.register(JsonInfoCollector(args.amlen_address))
+    try:
+        response = get(f'http://localhost:{server_port}', timeout=10).content.decode('UTF-8')
+    except Exception as ex:
+        print(f'Cannot make a request to localhost:{server_port} : {type(ex).__name__}')
 
-    server(args.port, args.amlen_address, args.once)
+    if args.once:
+        print(response)
+
+    while not args.once:
+        sleep(1)
