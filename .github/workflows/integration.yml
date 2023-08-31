@@ -21,7 +21,7 @@ jobs:
         pip3 install -r requirements.txt
     - name: Run exporter
       run: |
-        # /usr/bin/docker run -d -p 9089:9089 heywood8/amlen-server:1.0.0.1-20220622.1025_eclipse
+        /usr/bin/docker run -d -p 9089:9089 heywood8/amlen-server:1.0.0.1-20220622.1025_eclipse
         /usr/bin/docker ps
         sleep 10
         python3 src/amlen_exporter.py --once > exporter_result.txt
