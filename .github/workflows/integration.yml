@@ -1,0 +1,25 @@
+name: Integration testing
+
+on: [push]
+
+jobs:
+  build:
+    name: Release-centos
+    runs-on: ubuntu-latest
+    container: centos/centos7
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.9", "3.10"]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install dependencies
+      run: |
+        python3 -m pip install --upgrade pip
+        pip3 install -r requirements.txt
+    - name: Run
+      run: |
+        python3 src/amlen_exporter.py --once
