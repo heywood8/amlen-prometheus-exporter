@@ -1,9 +1,8 @@
 ''' Amlen exporter for prometheus '''
-import json
-import sys
-import time
-import requests
-import argparse
+from json import loads
+from time import sleep
+from requests import get
+from argparse import ArgumentParser
 from prometheus_client import start_http_server, Metric, REGISTRY
 
 class JsonServerCollector():
@@ -13,7 +12,7 @@ class JsonServerCollector():
     def collect(self):
         ''' Collect metrics'''
         try:
-            response = json.loads(requests.get(self._endpoint, timeout=10).content.decode('UTF-8'))
+            response = loads(get(self._endpoint, timeout=10).content.decode('UTF-8'))
         except Exception as ex:
             print(f'Cannot make a request to {self._endpoint} : {type(ex).__name__}')
             return None
@@ -33,6 +32,7 @@ class JsonServerCollector():
         # Count of connections that failed to connect since reset.
         metric.add_sample('amlen_connections_total_bad', {},
                           response['Server']['BadConnCount'])
+        metric
         yield metric
 
         metric = Metric('amlen_server_messages',
@@ -80,7 +80,7 @@ class JsonMemoryCollector():
     def collect(self):
         ''' Collect metrics'''
         try:
-            response = json.loads(requests.get(self._endpoint, timeout=10).content.decode('UTF-8'))
+            response = loads(get(self._endpoint, timeout=10).content.decode('UTF-8'))
         except Exception as ex:
             print(f'Cannot make a request to {self._endpoint} : {type(ex).__name__}')
             return None
@@ -127,7 +127,7 @@ class JsonSubscriptionCollector():
         metric = Metric('amlen_subscription_message',
                         'Messages in subscriptions', 'gauge')
         try:
-            response = json.loads(requests.get(self._endpoint, timeout=10, params={})
+            response = loads(get(self._endpoint, timeout=10, params={})
                                 .content.decode('UTF-8'))
         except Exception as ex:
             print(f'Cannot make a request to {self._endpoint} : {type(ex).__name__}')
@@ -186,7 +186,7 @@ class JsonEndpointCollector():
 
         try:
             params = {'StatType':'ReadMsgs', 'SubType':'History', 'Duration':6}
-            response = json.loads(requests.get(self._endpoint, timeout=10, params=params)
+            response = loads(get(self._endpoint, timeout=10, params=params)
                                   .content.decode('UTF-8'))
             metric = Metric('amlen_endpoint_message_rate',
                             'Messages per second', 'gauge')
@@ -196,7 +196,7 @@ class JsonEndpointCollector():
             metric.add_sample('amlen_endpoint_message_rate_incoming', {}, msg_rate)
             yield metric
 
-            response = json.loads(requests.get(self._endpoint, timeout=10).content.decode('UTF-8'))
+            response = loads(get(self._endpoint, timeout=10).content.decode('UTF-8'))
             endpoints = response['Endpoint']
 
             metric = Metric('amlen_endpoint', 'Endpoint counters', 'counter')
@@ -249,7 +249,7 @@ class JsonInfoCollector():
     def collect(self):
         ''' Collect metrics'''
         try:
-            response = json.loads(requests.get(self._endpoint, timeout=10)
+            response = loads(get(self._endpoint, timeout=10)
                               .content.decode('UTF-8'))
         except Exception as ex:
             print(f'Cannot make a request to {self._endpoint} : {type(ex).__name__}')
@@ -277,21 +277,31 @@ class JsonInfoCollector():
         return None
 
 
+def server(server_port, amlen_address):
+    start_http_server(server_port)
+    REGISTRY.register(JsonServerCollector(amlen_address))
+    REGISTRY.register(JsonMemoryCollector(amlen_address))
+    REGISTRY.register(JsonEndpointCollector(amlen_address))
+    REGISTRY.register(JsonSubscriptionCollector(amlen_address))
+    REGISTRY.register(JsonInfoCollector(amlen_address))
+    while True:
+        sleep(1)
+
+
 if __name__ == '__main__':
     # Usage: json_exporter.py port endpoint
-    parser = argparse.ArgumentParser(description='Amlen Prometheus exporter')
-    parser.add_argument('server_port', type=int, nargs='?',
+    parser = ArgumentParser(description='Amlen Prometheus exporter')
+    parser.add_argument('port', type=int, nargs='?',
                    default=9672,
                    help='This exporters\' port. Default: 9672')
     parser.add_argument('amlen_address', type=str, nargs='?',
                    default='localhost:9089',
                    help='Address of Amlen server. Default: localhost:9089')
+    parser.add_argument('--once', nargs='?', const=True, default=False,
+                   help='Run once instead of running server')
     args = parser.parse_args()
-    start_http_server(int(args.server_port))
-    REGISTRY.register(JsonServerCollector(args.amlen_address))
-    REGISTRY.register(JsonMemoryCollector(args.amlen_address))
-    REGISTRY.register(JsonEndpointCollector(args.amlen_address))
-    REGISTRY.register(JsonSubscriptionCollector(args.amlen_address))
-    REGISTRY.register(JsonInfoCollector(args.amlen_address))
-    while True:
-        time.sleep(1)
+
+    if not args.once:
+        server(args.port, args.amlen_address)
+    else:
+        print('Collecting metrics once')
