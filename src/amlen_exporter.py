@@ -3,6 +3,7 @@ import json
 import sys
 import time
 import requests
+import argparse
 from prometheus_client import start_http_server, Metric, REGISTRY
 
 class JsonServerCollector():
@@ -278,11 +279,19 @@ class JsonInfoCollector():
 
 if __name__ == '__main__':
     # Usage: json_exporter.py port endpoint
-    start_http_server(int(sys.argv[1]))
-    REGISTRY.register(JsonServerCollector(sys.argv[2]))
-    REGISTRY.register(JsonMemoryCollector(sys.argv[2]))
-    REGISTRY.register(JsonEndpointCollector(sys.argv[2]))
-    REGISTRY.register(JsonSubscriptionCollector(sys.argv[2]))
-    REGISTRY.register(JsonInfoCollector(sys.argv[2]))
+    parser = argparse.ArgumentParser(description='Amlen Prometheus exporter')
+    parser.add_argument('server_port', type=int, nargs='?',
+                   default=9672,
+                   help='This exporters\' port. Default: 9672')
+    parser.add_argument('amlen_address', type=str, nargs='?',
+                   default='localhost:9089',
+                   help='Address of Amlen server. Default: localhost:9089')
+    args = parser.parse_args()
+    start_http_server(int(args.server_port))
+    REGISTRY.register(JsonServerCollector(args.amlen_address))
+    REGISTRY.register(JsonMemoryCollector(args.amlen_address))
+    REGISTRY.register(JsonEndpointCollector(args.amlen_address))
+    REGISTRY.register(JsonSubscriptionCollector(args.amlen_address))
+    REGISTRY.register(JsonInfoCollector(args.amlen_address))
     while True:
         time.sleep(1)
