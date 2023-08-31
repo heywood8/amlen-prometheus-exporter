@@ -26,4 +26,6 @@ jobs:
         options: -d -p 9089:9089 --name imaserver
     - name: Run exporter
       run: |
+        /usr/bin/docker ps
+        curl localhost:9089
         python3 src/amlen_exporter.py --once
