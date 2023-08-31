@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   build:
-    name: Release-centos
+    name: integration-test
     runs-on: ubuntu-latest
     strategy:
       matrix:
