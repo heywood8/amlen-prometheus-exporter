@@ -28,7 +28,7 @@ jobs:
       - name: Set up Python 3.
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9-dev' 
+          python-version: '3.9-dev'
 
       - name: Install requirements.
         run: |
@@ -48,7 +48,7 @@ jobs:
         run: |
           echo $RELEASE_VERSION
           echo ${{ env.RELEASE_VERSION }}
-      
+
       - name: Compress action step
         uses: a7ul/tar-action@v1.1.0
         id: compress
@@ -93,11 +93,6 @@ jobs:
       - name: Set env
         run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
-      - name: Test
-        run: |
-          echo $RELEASE_VERSION
-          echo ${{ env.RELEASE_VERSION }}
-      
       - name: Compress action step
         uses: a7ul/tar-action@v1.1.0
         id: compress
